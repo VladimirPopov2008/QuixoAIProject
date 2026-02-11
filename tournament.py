@@ -1,62 +1,69 @@
 import json
-import numpy as np
 from game import Game
 
 class Tournament:
-    """
-    Tournament that can use `lookup_dict` for move evaluation inside Game
-    but accumulate scored states into a separate `storage_dict`.
-    """
+    def __init__(self, states_dict=None):
+        """
+        Initialize a tournament of multiple games.
+        
+        Args:
+            states_dict: Dictionary of board states for greedy agent
+        """
+        
+        self.states_dict = states_dict or {}
 
-    def __init__(self, games=100, play_mode="RANDOM", epsilon=0.1,
-                 lookup_dict=None, storage_dict=None):
-        self.games = games
-        self.play_mode = play_mode
-        self.epsilon = epsilon
-        # lookup_dict is passed into each Game so the agent can consult it when ranking moves
-        self.lookup_dict = lookup_dict or {}
-        # storage_dict accumulates scored states from the games in this tournament
-        self.storage_dict = storage_dict or {}
-        self.stats = {"VICTORY_X": 0, "VICTORY_O": 0, "TIE": 0}
-        self.unknown_ratios = []
+        
+        # Statistics
+        self.stats = {
+            'VICTORY_X': 0,
+            'VICTORY_O': 0
+        }
+        
 
-    def run(self):
-        # reset stats each run
-        self.stats = {"VICTORY_X": 0, "VICTORY_O": 0, "TIE": 0}
-        self.unknown_ratios = []
+    def run(self, num_games=1000, play_mode='RANDOM', train_mode=False):
+        """
+        Run the tournament for the specified number of games.
+        """
+        unknown_rates = []
+        for _ in range(num_games):
+            game = Game(play_mode=play_mode, states_dict=self.states_dict)
+            scores = game.play()
 
-        for _ in range(self.games):
-            # pass lookup_dict into Game for move ranking
-            game = Game(
-                play_mode=self.play_mode,
-                states_dict=self.lookup_dict,
-                epsilon=self.epsilon
-            )
-            result = game.play()
-            self.stats[result] += 1
 
-            # accumulate scored states into storage_dict (not into lookup_dict)
-            self.save_game_to_dict(game)
+            self.save_game_to_dict(scores)
 
-            self.unknown_ratios.append(game.unknown_ratio())
+            #unknown_rates.append(unknown_rate)
+            if game.outcome == 'VICTORY_X':
+                self.stats['VICTORY_X'] += 1
+            elif game.outcome == 'VICTORY_O':
+                self.stats['VICTORY_O'] += 1
+        return unknown_rates
 
-    def save_game_to_dict(self, game):
-        for state, score in game.score_boards():
-            if state not in self.storage_dict:
-                self.storage_dict[state] = [score, 1]
-            else:
-                avg, count = self.storage_dict[state]
-                self.storage_dict[state][0] = (avg * count + score) / (count + 1)
-                self.storage_dict[state][1] += 1
+    def save_game_to_dict(self, game_scores):
+       for board_hash, score in game_scores.items():
+           if board_hash not in self.states_dict:
+               self.states_dict[board_hash] = [score, 1]
+           else:
+               total, count = self.states_dict[board_hash]
+               new_count = count + 1
+               new_avg = (total * count + score) / new_count
+               self.states_dict[board_hash] = [new_avg, new_count]
 
-    def save_dict(self, filename):
-        # keys are strings already in your setup; convert to str to be safe
-        serializable = {str(k): v for k, v in self.storage_dict.items()}
-        with open(filename, "w") as f:
-            json.dump(serializable, f)
+    def save_dict_to_file(self, filename):
+        """
+        Save the board dictionary to a JSON file.
+        
+        Args:
+            filename: Path to the JSON file
+        """
+        with open(filename, 'w') as f:
+            json.dump(self.states_dict, f)
 
-    def unknown_stats(self):
-        if not self.unknown_ratios:
-            return 0.0, 0.0
-        arr = np.array(self.unknown_ratios)
-        return float(arr.mean()), float(arr.var())
+    def print_results(self):
+        """Print tournament statistics."""
+        print("\n" + "="*50)
+        print("TOURNAMENT RESULTS")
+        print("="*50)
+        print(f"X Wins: {self.stats['VICTORY_X']}")
+        print(f"O Wins: {self.stats['VICTORY_O']}")
+        print("="*50 + "\n")
