@@ -33,11 +33,7 @@ class Game:
       By default it's large (10_000) but can be set smaller for testing.
     """
     def __init__(self, play_mode="RANDOM", states_dict=None,
-<<<<<<< HEAD
-                 win_reward=1.0, draw_reward=0.5, lose_reward=0.0,
-=======
                  win_reward=10.0, draw_reward=0.5, lose_reward=0.0,
->>>>>>> 508193cb73bf88f6e3a94476b5e93ce4fe6e2a47
                  gamma=0.9, unknown_state_score=0.5, epsilon=0.1,
                  max_turns=10000):
         self.play_mode = play_mode
