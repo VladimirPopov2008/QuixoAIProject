@@ -195,5 +195,6 @@ pyrightconfig.json
 
 /states_greedy.json
 /states_random.json
+/states_heuristic.json
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python
