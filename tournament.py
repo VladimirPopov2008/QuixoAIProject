@@ -27,16 +27,24 @@ class Tournament:
         unknown_rates = []
         for _ in range(num_games):
             game = Game(play_mode=play_mode, states_dict=self.states_dict)
-            scores = game.play()
-
+            scores, unknown_rate = game.play()  # Get unknown rate from game
 
             self.save_game_to_dict(scores)
 
-            #unknown_rates.append(unknown_rate)
+            unknown_rates.append(unknown_rate)  # Store unknown rate
             if game.outcome == 'VICTORY_X':
                 self.stats['VICTORY_X'] += 1
             elif game.outcome == 'VICTORY_O':
                 self.stats['VICTORY_O'] += 1
+
+        # Calculate average and variance of unknown rates
+        avg_unknown_rate = sum(unknown_rates) / len(unknown_rates) if unknown_rates else 0
+        variance_unknown_rate = sum((x - avg_unknown_rate) ** 2 for x in unknown_rates) / len(unknown_rates) if unknown_rates else 0
+
+        print("\nUnknown Board Statistics:")
+        print(f"Average Unknown Rate: {avg_unknown_rate:.4f}")
+        print(f"Variance of Unknown Rate: {variance_unknown_rate:.4f}")
+
         return unknown_rates
 
     def save_game_to_dict(self, game_scores):

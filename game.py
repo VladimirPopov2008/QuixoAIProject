@@ -21,11 +21,18 @@ class Game:
         self.current_player = 'X'
         self.board_history = []
         self.outcome = 'ONGOING'
+        self.unknown_count = 0  # Counter for unknown boards
+        self.total_moves = 0  # Counter for total moves
 
     def play(self):
         self.board_history = []
+        self.unknown_count = 0  # Reset unknown count
+        self.total_moves = 0  # Reset total moves
         while self.outcome == 'ONGOING':
             self.board_history.append(hash_board(self.board))
+            self.total_moves += 1
+            if hash_board(self.board) not in self.states_dict:
+                self.unknown_count += 1
             if self.current_player == 'X':
                 if self.play_mode == 'GREEDY':
                     self.perform_greedy_agent_move()
@@ -36,7 +43,7 @@ class Game:
             self.outcome = self.check_win()
             if self.outcome == 'ONGOING':
                 self.current_player = 'O' if self.current_player == 'X' else 'X'
-        return self.score_boards()
+        return self.score_boards(), self.unknown_count / self.total_moves if self.total_moves > 0 else 0
 
     def perform_random_agent_move(self):
         valid_moves = self.get_valid_moves()
