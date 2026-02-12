@@ -96,12 +96,11 @@ class Game:
 
     def perform_heuristic_agent_move(self):
         """
-        Heuristic agent (epsilon = 0.5 recommended).
+        Heuristic agent (epsilon = 0.5 recommended for training).
         Priority:
           1. Make a winning move if one exists.
           2. Block the opponent's winning move.
-          3. Prefer strategic positions (corners / center).
-          4. Fall back to greedy / random (like perform_greedy_agent_move).
+          3. Fall back to greedy/random with strategic position bonus.
         """
         my_positions = self.get_valid_positions()
         all_moves = []
@@ -163,21 +162,25 @@ class Game:
                     return
                 self.board = board_copy
 
-        # 3. Prefer strategic positions (corners and center)
+        # 3. Greedy logic with strategic position bonus
+        #    Evaluate all moves using dictionary, but give a small bonus to
+        #    strategic positions (corners) when the dictionary score is unknown.
         strategic = {(0, 0), (0, 4), (4, 0), (4, 4)}
-        strategic_moves = [m for m in all_moves if (m[0], m[1]) in strategic]
-        if strategic_moves:
-            move = random.choice(strategic_moves)
-            self.make_move(*move)
-            return
+        STRATEGIC_BONUS = 0.05  # Small bonus for strategic positions
 
-        # 4. Fall back to greedy logic (same as perform_greedy_agent_move)
         move_scores = []
         for move in all_moves:
             board_copy = self.board.copy()
             self.make_move(*move)
             board_hash = hash_board(self.board)
-            score = self.states_dict.get(board_hash, [self.unknown_score, 1])[0]
+            entry = self.states_dict.get(board_hash, None)
+            if entry is not None:
+                score = entry[0]
+            else:
+                # Unknown board – use unknown_score + strategic bonus
+                score = self.unknown_score
+                if (move[0], move[1]) in strategic:
+                    score += STRATEGIC_BONUS
             move_scores.append((move, score))
             self.board = board_copy
 

@@ -109,9 +109,13 @@ if __name__ == "__main__":
     run_performance_tournament(heuristic_dict, 'GREEDY',
                                "Greedy + Heuristic Dict")
 
-    # Heuristic agent with heuristic dictionary
+    # Heuristic agent with different dictionaries
+    # The heuristic dict was trained with eps=0.5 (noisy), greedy dict with eps=0.1 (cleaner)
+    run_performance_tournament(greedy_dict, 'HEURISTIC',
+                               "Heuristic + Greedy Dict (eps=0.1)", epsilon=0.1)
+    
     run_performance_tournament(heuristic_dict, 'HEURISTIC',
-                               "Heuristic + Heuristic Dict", epsilon=0.5)
+                               "Heuristic + Heuristic Dict (eps=0.1)", epsilon=0.9)
 
     # ──────────────────────────────────────────────────────────────────
     # STEP 3: Unknown-rate analysis (100 games)
