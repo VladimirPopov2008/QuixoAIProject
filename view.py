@@ -2,10 +2,24 @@
 # GRAPHIC VIEW
 # ==============================================================================
 
-class MyGameView:  # TODO: change name
+
+import sys
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QGridLayout,
+                               QPushButton, QVBoxLayout, QLabel, QMessageBox)
+from PySide6.QtCore import Slot, QTimer
+
+import json
+from game import Game
+
+
+class MyGameView(QMainWindow):  # TODO: change name
     def __init__(self):
-        # הפריסה הכללית של חלון המשחק
-        pass
+        super().__init__()
+        self.setWindowTitle("VLadimir's Quixo - Agent (X) vs Manual (O)")
+        self.setFixedSize(400, 480)
+        
+        self.general_layout = QVBoxLayout()
+        self._central_widget = QWidget(self)
 
     def _create_board_grid(self):
         """ Creates the grid for the game board """
